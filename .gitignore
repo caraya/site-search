@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Mac crud
 .DS_Store
+
+# Secrets
+.env
