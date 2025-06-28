@@ -16,13 +16,15 @@
 // - Node.js environment
 // - 'node-fetch' package for making HTTP requests
 
+
 exports.handler = async function(event) {
+  // --- Environment Variables ---
   const apiKey = process.env.GOOGLE_API_KEY;
   const cx = process.env.GOOGLE_CX;
 
-  // --- Get Search Query ---
-  // The search query is passed as a query parameter named 'q'.
+  // --- Get Search Query and Start Index ---
   const query = event.queryStringParameters.q;
+  const start = event.queryStringParameters.start || '1';
 
   // --- Validate Input ---
   if (!query) {
@@ -35,16 +37,18 @@ exports.handler = async function(event) {
   if (!apiKey || !cx) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'API key or CX is not configured.' }),
+      body: JSON.stringify({ error: 'API key or CX is not configured on the server.' }),
     };
   }
 
-  // --- Construct API URL ---
-  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}`;
+  // --- Construct API URL with start parameter ---
+  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&start=${start}`;
+  
+  // --- DIAGNOSTIC LOGGING (Commented Out) ---
+  // console.log(`[google-search function] Fetching URL: ${url}`);
 
   try {
     // --- Fetch Search Results ---
-    // We're using 'node-fetch' which you'll need to include in your package.json
     const fetch = (await import('node-fetch')).default;
     const searchResponse = await fetch(url);
     const searchData = await searchResponse.json();
@@ -56,7 +60,7 @@ exports.handler = async function(event) {
     };
   } catch (error) {
     // --- Handle Errors ---
-    console.error('Error fetching search results:', error);
+    console.error('[google-search function] Error fetching search results:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to fetch search results.' }),
